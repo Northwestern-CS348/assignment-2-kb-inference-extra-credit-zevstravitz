@@ -130,18 +130,68 @@ class KnowledgeBase(object):
         # Implementation goes here
         # Not required for the extra credit assignment
 
-    def kb_explain(self, fact_or_rule):
+    def is_supported_by_something(self, fact_or_rule):
+        return len(fact_or_rule.supported_by) > 0
+
+    def fr_explained(self, fr, bt, explanation):
+        if isinstance(fr, Fact):
+            fact_index = self.facts.index(fr)
+            current_fact = self.facts[fact_index].statement
+            explanation += " " * bt + "fact: "+ current_fact.__str__()
+            if self.facts[fact_index].asserted:
+                explanation += " ASSERTED"
+            explanation += "\n"
+            if self.is_supported_by_something(self.facts[fact_index]):
+                for fact_support in self.facts[fact_index].supported_by:
+                    explanation += " " * (bt + 2) + "SUPPORTED BY\n"
+                    for pairing in fact_support:
+                        explanation = self.fr_explained(pairing, bt + 4, explanation)
+        else:
+            rule_index = self.rules.index(fr)
+            explanation += " " * bt + "rule: ("
+            if len(self.rules[rule_index].lhs) == 1:
+                rule_one = self.rules[rule_index].lhs[0]
+                explanation += rule_one.__str__()
+            else:
+                for lhs in self.rules[rule_index].lhs[:-1]:
+                    explanation += lhs.__str__() + ", "
+                prev = self.rules[rule_index].lhs[-1]
+                explanation += prev.__str__()
+            current_rule = self.rules[rule_index].rhs
+            explanation += (") -> " + current_rule.__str__())
+            if self.rules[rule_index].asserted:
+                explanation += " ASSERTED"
+            explanation += "\n"
+            if self.is_supported_by_something(self.rules[rule_index]):
+                for rule_support in self.rules[rule_index].supported_by:
+                    explanation += " " * (bt + 2) + "SUPPORTED BY\n"
+                    for pairing in rule_support:
+                        explanation = self.fr_explained(pairing, bt + 4, explanation)
+        return explanation
+
+    def kb_explain(self, fr):
         """
         Explain where the fact or rule comes from
-
         Args:
             fact_or_rule (Fact or Rule) - Fact or rule to be explained
-
         Returns:
             string explaining hierarchical support from other Facts and rules
         """
         ####################################################
         # Student code goes here
+
+        output, bt = str(), 0
+        if isinstance(fr, Fact):
+            if fr in self.facts:
+                output = self.fr_explained(fr, 0, "")
+            else:
+                output = "Fact is not in the KB"
+        elif isinstance(fr, Rule):
+            if fr in self.rules:
+                self.fr_explained(fr, 0, "")
+            else:
+                output = "Rule is not in the KB"
+        return output
 
 
 class InferenceEngine(object):
