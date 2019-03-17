@@ -133,41 +133,48 @@ class KnowledgeBase(object):
     def is_supported_by_something(self, fact_or_rule):
         return len(fact_or_rule.supported_by) > 0
 
+    def explain_fact(self,fr,bt,explanation):
+        fact_index = self.facts.index(fr)
+        current_fact = self.facts[fact_index].statement
+        explanation += " " * bt + "fact: " + current_fact.__str__()
+        if self.facts[fact_index].asserted:
+            explanation += " ASSERTED"
+        explanation += "\n"
+        if self.is_supported_by_something(self.facts[fact_index]):
+            for fact_support in self.facts[fact_index].supported_by:
+                explanation += " " * (bt + 2) + "SUPPORTED BY\n"
+                for pairing in fact_support:
+                    explanation = self.fr_explained(pairing, bt + 4, explanation)
+        return explanation
+
+    def explain_rule(self,fr,bt,explanation):
+        rule_index = self.rules.index(fr)
+        explanation += " " * bt + "rule: ("
+        if len(self.rules[rule_index].lhs) == 1:
+            rule_one = self.rules[rule_index].lhs[0]
+            explanation += rule_one.__str__()
+        else:
+            for lhs in self.rules[rule_index].lhs[:-1]:
+                explanation += lhs.__str__() + ", "
+            prev = self.rules[rule_index].lhs[-1]
+            explanation += prev.__str__()
+        current_rule = self.rules[rule_index].rhs
+        explanation += (") -> " + current_rule.__str__())
+        if self.rules[rule_index].asserted:
+            explanation += " ASSERTED"
+        explanation += "\n"
+        if self.is_supported_by_something(self.rules[rule_index]):
+            for rule_support in self.rules[rule_index].supported_by:
+                explanation += " " * (bt + 2) + "SUPPORTED BY\n"
+                for pairing in rule_support:
+                    explanation = self.fr_explained(pairing, bt + 4, explanation)
+        return explanation
+
     def fr_explained(self, fr, bt, explanation):
         if isinstance(fr, Fact):
-            fact_index = self.facts.index(fr)
-            current_fact = self.facts[fact_index].statement
-            explanation += " " * bt + "fact: "+ current_fact.__str__()
-            if self.facts[fact_index].asserted:
-                explanation += " ASSERTED"
-            explanation += "\n"
-            if self.is_supported_by_something(self.facts[fact_index]):
-                for fact_support in self.facts[fact_index].supported_by:
-                    explanation += " " * (bt + 2) + "SUPPORTED BY\n"
-                    for pairing in fact_support:
-                        explanation = self.fr_explained(pairing, bt + 4, explanation)
+            return self.explain_fact(fr,bt,explanation)
         else:
-            rule_index = self.rules.index(fr)
-            explanation += " " * bt + "rule: ("
-            if len(self.rules[rule_index].lhs) == 1:
-                rule_one = self.rules[rule_index].lhs[0]
-                explanation += rule_one.__str__()
-            else:
-                for lhs in self.rules[rule_index].lhs[:-1]:
-                    explanation += lhs.__str__() + ", "
-                prev = self.rules[rule_index].lhs[-1]
-                explanation += prev.__str__()
-            current_rule = self.rules[rule_index].rhs
-            explanation += (") -> " + current_rule.__str__())
-            if self.rules[rule_index].asserted:
-                explanation += " ASSERTED"
-            explanation += "\n"
-            if self.is_supported_by_something(self.rules[rule_index]):
-                for rule_support in self.rules[rule_index].supported_by:
-                    explanation += " " * (bt + 2) + "SUPPORTED BY\n"
-                    for pairing in rule_support:
-                        explanation = self.fr_explained(pairing, bt + 4, explanation)
-        return explanation
+            return self.explain_rule(fr,bt,explanation)
 
     def kb_explain(self, fr):
         """
