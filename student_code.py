@@ -144,7 +144,7 @@ class KnowledgeBase(object):
             for fact_support in self.facts[fact_index].supported_by:
                 explanation += " " * (bt + 2) + "SUPPORTED BY\n"
                 for pairing in fact_support:
-                    explanation = self.fr_explained(pairing, bt + 4, explanation)
+                    explanation = self.fr_explained(bt + 4, pairing, explanation)
         return explanation
 
     def explain_rule(self,fr,bt,explanation):
@@ -167,10 +167,10 @@ class KnowledgeBase(object):
             for rule_support in self.rules[rule_index].supported_by:
                 explanation += " " * (bt + 2) + "SUPPORTED BY\n"
                 for pairing in rule_support:
-                    explanation = self.fr_explained(pairing, bt + 4, explanation)
+                    explanation = self.fr_explained(bt + 4, pairing, explanation)
         return explanation
 
-    def fr_explained(self, fr, bt, explanation):
+    def fr_explained(self, bt, fr, explanation):
         if isinstance(fr, Fact):
             return self.explain_fact(fr,bt,explanation)
         else:
@@ -190,12 +190,12 @@ class KnowledgeBase(object):
         output, bt = str(), 0
         if isinstance(fr, Fact):
             if fr in self.facts:
-                output = self.fr_explained(fr, 0, "")
+                output = self.fr_explained(0, fr, "")
             else:
                 output = "Fact is not in the KB"
         elif isinstance(fr, Rule):
             if fr in self.rules:
-                self.fr_explained(fr, 0, "")
+                self.fr_explained(0, fr, "")
             else:
                 output = "Rule is not in the KB"
         return output
